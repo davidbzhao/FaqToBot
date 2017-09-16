@@ -1,35 +1,37 @@
 from bs4 import BeautifulSoup as bs
 import urllib.request as urlre
+from urllib.error import HTTPError
 from HtmlFeatureExtractor import HtmlFeatureExtractor
 from ANN import BasicNeuralNetwork as BasicNeuralNetwork
 
 class DataGenerator:
     def __init__(self):
-        self.data = [
-            ['https://en.wikipedia.org/wiki/Triboelectric_effect', 0],
-            ['https://www.cs.virginia.edu/~cr4bd/3330/F2017/', 0],
-            ['https://news.ycombinator.com/', 0],
-            ['http://onlinelibrary.wiley.com/doi/10.1002/leap.1116/full', 0],
-            ['http://users.ece.utexas.edu/~adnan/pike.html', 0],
-            ['https://www.economist.com/news/science-and-technology/21728888-better-motors-go-better-batteries-electric-motors-improve-more-things', 0],
-            ['http://www.anandtech.com/show/11842/western-digital-ships-12-tb-wd-gold-hdd-8-platters-helium', 0],
-            ['https://github.com/marshq/europilot', 0],
-            ['https://github.com/eclipse/openj9', 1],
-            ['http://ramhacks.vcu.edu/', 1],
-            ['http://ugrad.vcu.edu/why/faqs/transportation.html', 1],
-            ['http://ugrad.vcu.edu/why/faqs/transfers.html', 1],
-            ['https://www.google.com/policies/faq/', 1],
-            ['http://www.calbar.ca.gov/FAQ', 1],
-            ['http://php.net/manual/en/faq.obtaining.php', 1],
-            ['https://gov.georgia.gov/faq', 1],
-        ]
-        self.generateData()
+        self.processData('prepro_training.txt')
+        # self.generateData('training.txt')
 
-    def generateData(self):
-        for url in self.data:
-            html = bs(urlre.urlopen(url[0]), 'html.parser')
-            hfe = HtmlFeatureExtractor(html)
-            print(url[0])
+    def getBaseUrl(self, url):
+        try:
+            third_slash = url.index('/', url.index('/', url.index('/')+1)+1)
+            return url[:third_slash+1]
+        except ValueError: return url
+
+    def processData(self, filepath):
+        print(filepath)
+        with open(filepath, 'r') as f:
+            lines = f.readlines()
+            for line in lines:
+                y, url = line.strip().split()
+                base = self.getBaseUrl(url)
+                self.generateData(url, base, y)
+
+    def generateData(self, url, base, y):
+        try:
+            html = bs(urlre.urlopen(url), 'html.parser')
+            hfe = HtmlFeatureExtractor(html, base)
             with open('training.txt', 'a+') as f:
                 input_vec = [hfe.getNumberOfQuestionMarks(), hfe.getFaqInTitle(), hfe.getNumberOfFaqs(), hfe.getNumberofHashAnchors()]
-                f.write(' '.join([str(url[1])] + [str(x) for x in input_vec]) + '\n')
+                f.write(' '.join([str(y)] + [str(x) for x in input_vec]) + '\n')
+        except HTTPError: print(url, 'not processed')
+
+if __name__ == '__main__':
+    DataGenerator()

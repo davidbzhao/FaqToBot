@@ -18,7 +18,7 @@ class BasicNeuralNetwork():
 	# 	If you had layers of dimensions 4, 2, and 1, the weights would be initialized
 	#	as arrays of dimensions as such, [[2x5],[1x3]].
 	def initWeights(self):
-		if self.filepath == None or not os.path.isfile('weights.pickle'):
+		if self.filepath == None or not os.path.isfile(self.filepath):
 			for cnt in range(self.L-1):
 				self.theta.append((np.random.rand(self.dim[cnt+1], self.dim[cnt]+1)-0.5)*5)
 		else:
@@ -55,11 +55,23 @@ class BasicNeuralNetwork():
 			sens.insert(0, np.multiply(np.dot(self.theta[cnt].T[1:],sens[0]), np.multiply(a[cnt],1-a[cnt])))
 		grad = []
 		for cnt in range(self.L-1):
-			# print(sens[cnt][:,None])
-			# print(np.insert(a[cnt],0,1,axis=0).T[:,None])
-			# grad.append(np.matmul(sens[cnt], np.insert(a[cnt],0,1,axis=0).T))
 			grad.append(np.dot(sens[cnt][:,None], np.insert(a[cnt],0,1,axis=0)[:,None].T))
 		return grad
+
+	def trainOnData(self, filepath):
+		print('Training on data')
+		x = []
+		y_tmp = []
+		if os.path.isfile(filepath):
+			with open(filepath, 'r') as f:
+				for line in f.readlines():
+					tmp = [int(x) for x in line.strip().split()]
+					x.append(tmp[1:])
+					y_tmp.append(tmp[0])
+		y = np.zeros((len(y_tmp), self.dim[-1]))
+		y[np.arange(len(y_tmp)), y_tmp] = 1
+		y = y.tolist()
+		self.train(x, y)
 
 	def train(self, x, y):
 		grad = [0*t for t in self.theta]

@@ -21,13 +21,13 @@ def urlStandardize(url):
 
 def trainNN():
     nn = BasicNeuralNetwork('weights.pickle')
-    x = [[2,0,0,21], [0,0,0,14], [0,0,1,0], [24,0,0,47], [0,0,0,0], [102,0,1,0], [10,0,0,19], [1,0,0,14], [4,0,1,8], [9,0,2,7], [9,0,4,11], [17,0,4,19], [3,1,4,1], [11,1,26,0], [16,0,2,9], [17,1,6,3]]
-    y = [[0,1],[0,1],[0,1],[0,1],[0,1],[0,1],[0,1],[0,1],[1,0],[1,0],[1,0],[1,0],[1,0],[1,0],[1,0],[1,0]]
-    nn.train(x,y)
+    # x = [[2,0,0,21], [0,0,0,14], [0,0,1,0], [24,0,0,47], [0,0,0,0], [102,0,1,0], [10,0,0,19], [1,0,0,14], [4,0,1,8], [9,0,2,7], [9,0,4,11], [17,0,4,19], [3,1,4,1], [11,1,26,0], [16,0,2,9], [17,1,6,3]]
+    # y = [[0,1],[0,1],[0,1],[0,1],[0,1],[0,1],[0,1],[0,1],[1,0],[1,0],[1,0],[1,0],[1,0],[1,0],[1,0],[1,0]]
+    # nn.train(x,y)
+    nn.trainOnData('training.txt')
 
 def isFaq(url, html):
     hfe = HtmlFeatureExtractor(html, baseUrl)
-    print(hfe.getListOfInternalLinks(url))
     ## Neural network
     # Features;
     #   (1) number of question marks
@@ -54,10 +54,11 @@ def crawl(baseUrl):
         for link in cur_page_links:
             url_queue.append(link)
         if len(visited) >= PAGE_LIMIT: break
+    if len(visited) >= PAGE_LIMIT: print('Page limit of ' + str(PAGE_LIMIT) + ' was hit.')
     print('Visited ' + str(len(visited)) + ' unique pages.')
     print('About ' + str(len(faq_urls)) + ' of those pages are likely FAQ pages.')
-    if len(visited) >= PAGE_LIMIT: print('Program hit unique page visits limit of ' + str(PAGE_LIMIT))
     return faq_urls
 
 baseUrl = 'http://ugrad.vcu.edu/'
+trainNN()
 faq_urls = crawl(baseUrl)
