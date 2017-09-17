@@ -4,11 +4,11 @@ import pickle
 
 class BasicNeuralNetwork():
 	def __init__(self, filepath=None):
-		self.dim = [4, 3, 2]
+		self.dim = [5, 3, 2]
 		self.L = len(self.dim)
 		self.theta = []
-		self.lam = 0.03
-		self.learning_rate = 0.05
+		self.lam = 0.05
+		self.learning_rate = 0.003
 		self.filepath = filepath
 		self.initWeights()
 		self.sigmoid = np.vectorize(self.sigmoid)
@@ -18,11 +18,11 @@ class BasicNeuralNetwork():
 	# 	If you had layers of dimensions 4, 2, and 1, the weights would be initialized
 	#	as arrays of dimensions as such, [[2x5],[1x3]].
 	def initWeights(self):
-		if self.filepath == None or not os.path.isfile(self.filepath):
-			for cnt in range(self.L-1):
-				self.theta.append((np.random.rand(self.dim[cnt+1], self.dim[cnt]+1)-0.5)*5)
-		else:
-			self.theta = pickle.load(open(self.filepath, 'rb'))
+		# if self.filepath == None or not os.path.isfile(self.filepath):
+		for cnt in range(self.L-1):
+			self.theta.append((np.random.rand(self.dim[cnt+1], self.dim[cnt]+1)-0.5)*5)
+		# else:
+			# self.theta = pickle.load(open(self.filepath, 'rb'))
 
 	# Apply a sigmoid function to an input z,
 	# vectorized to work on numpy structures
@@ -65,40 +65,43 @@ class BasicNeuralNetwork():
 		if os.path.isfile(filepath):
 			with open(filepath, 'r') as f:
 				for line in f.readlines():
-					tmp = [int(x) for x in line.strip().split()]
+					tmp = [float(x) for x in line.strip().split()]
 					x.append(tmp[1:])
-					y_tmp.append(tmp[0])
+					y_tmp.append(int(tmp[0]))
 		y = np.zeros((len(y_tmp), self.dim[-1]))
 		y[np.arange(len(y_tmp)), y_tmp] = 1
 		y = y.tolist()
-		self.train(x, y)
+		zipped = np.array([i for i in zip(x,y)])
+		# print(zipped.tolist())
+		np.random.shuffle(zipped)
+		# print(zipped.tolist())
+		x_rand = []
+		y_rand = []
+		for _x, _y in zipped.tolist():
+			x_rand.append(_x)
+			y_rand.append(_y)
+		print(len(x_rand), len(y_rand))
+		print([len(i) for i in x_rand])
+		print([len(i) for i in y_rand])
+		self.train(x_rand, y_rand)
 
 	def train(self, x, y):
+		print('Train')
 		grad = [0*t for t in self.theta]
 		reg = self.theta
 		m = len(y)
-		for i in range(m):
-			# a = forwardPropOne([[x[0][i]], [x[1][i]]])
-			a = self.forwardPropOne(x[i])
-			# print('a', a)
-			g = self.backwardProp(a,y[i])
-			grad = [grad[k] + g[k] for k in range(self.L-1)]
-		for i in range(self.L-1):
-			reg[i].T[0] = 0
-			self.theta[i] = self.theta[i] - self.learning_rate*(grad[i]/m + self.lam*reg[i])
-			# print(forwardPropOne(x))
+		for n in range(50):
+			print('Epoch',n)
+			for i in range(m):
+				# a = forwardPropOne([[x[0][i]], [x[1][i]]])
+				a = self.forwardPropOne(x[i])
+				# print('a', a)
+				g = self.backwardProp(a,y[i])
+				grad = [grad[k] + g[k] for k in range(self.L-1)]
+			for i in range(self.L-1):
+				reg[i].T[0] = 0
+				self.theta[i] = self.theta[i] - self.learning_rate*(grad[i]/m + self.lam*reg[i])
+				# print(forwardPropOne(x))
 		if self.filepath != None:
 			pickle.dump(self.theta, open(self.filepath, 'wb'))
 		return
-
-	# # def main():
-	# 	initWeights()
-	# 	x = [[2,0,0,21], [0,0,0,14], [0,0,1,0], [24,0,0,47], [0,0,0,0], [102,0,1,0], [10,0,0,19], [1,0,0,14], [4,0,1,8], [9,0,2,7], [9,0,4,11], [17,0,4,19], [3,1,4,1], [11,1,26,0], [16,0,2,9], [17,1,6,3]]
-	# 	y = [[0,1],[0,1],[0,1],[0,1],[0,1],[0,1],[0,1],[0,1],[1,0],[1,0],[1,0],[1,0],[1,0],[1,0],[1,0],[1,0]]
-
-	# 	# print(forwardPropOne([[0.75],[0.25]]))
-	# 	print('theta',theta)
-	# 	train(x,y)
-	# 	# print(forwardPropOne([[0.75],[0.25]]))
-	# 	print('theta',theta)
-	# main()

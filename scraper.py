@@ -1,11 +1,12 @@
 from bs4 import BeautifulSoup as bs
 import urllib.request as urlre
+from urllib.error import URLError
 from HtmlFeatureExtractor import HtmlFeatureExtractor
 from ANN import BasicNeuralNetwork as BasicNeuralNetwork
 from DataGeneration import DataGenerator
 from collections import deque
 
-PAGE_LIMIT = 10
+PAGE_LIMIT = 50
 
 def urlStandardize(url):
     try:
@@ -21,9 +22,6 @@ def urlStandardize(url):
 
 def trainNN():
     nn = BasicNeuralNetwork('weights.pickle')
-    # x = [[2,0,0,21], [0,0,0,14], [0,0,1,0], [24,0,0,47], [0,0,0,0], [102,0,1,0], [10,0,0,19], [1,0,0,14], [4,0,1,8], [9,0,2,7], [9,0,4,11], [17,0,4,19], [3,1,4,1], [11,1,26,0], [16,0,2,9], [17,1,6,3]]
-    # y = [[0,1],[0,1],[0,1],[0,1],[0,1],[0,1],[0,1],[0,1],[1,0],[1,0],[1,0],[1,0],[1,0],[1,0],[1,0],[1,0]]
-    # nn.train(x,y)
     nn.trainOnData('training.txt')
 
 def isFaq(url, html):
@@ -32,11 +30,14 @@ def isFaq(url, html):
     # Features;
     #   (1) number of question marks
     #   (2) if FAQ or Frequently Asked Questions is in the title
-    #   (3) how many times FAQ or Frequently Asked Questions is on the page
+    #   (3) how many times non-link FAQ or Frequently Asked Questions is on the page
     #   (4) how many anchor tags with links to hash
-    input_vec = [hfe.getNumberOfQuestionMarks(), hfe.getFaqInTitle(), hfe.getNumberOfFaqs(), hfe.getNumberofHashAnchors()]
+    input_vec = [hfe.getNumberOfQuestions(), hfe.getFaqInTitle(), hfe.getNumberOfFaqs(), hfe.getNumberofHashAnchors(), hfe.getFaqInUrl(url)]
     nn = BasicNeuralNetwork('weights.pickle')
-    return not not (nn.predict(input_vec))
+    prediction = nn.predict(input_vec)
+    # print(nn.forwardPropOne(input_vec)[0])
+    # print(prediction)
+    return (nn.predict(input_vec))
 
 def crawl(baseUrl):
     faq_urls = []
@@ -46,19 +47,23 @@ def crawl(baseUrl):
     while url_queue:
         cur_url = url_queue.popleft()
         if urlStandardize(cur_url) in visited: continue
-        html = bs(urlre.urlopen(cur_url), 'html.parser')
-        hfe = HtmlFeatureExtractor(html, baseUrl)
-        if isFaq(cur_url, html): faq_urls.append(urlStandardize(cur_url))
-        visited.append(urlStandardize(cur_url))
-        cur_page_links = hfe.getListOfInternalLinks(cur_url)
-        for link in cur_page_links:
-            url_queue.append(link)
-        if len(visited) >= PAGE_LIMIT: break
+        print(cur_url)
+        try:
+            html = bs(urlre.urlopen(cur_url), 'html.parser')
+            hfe = HtmlFeatureExtractor(html, baseUrl)
+            if isFaq(cur_url, html): faq_urls.append(urlStandardize(cur_url))
+            visited.append(urlStandardize(cur_url))
+            cur_page_links = hfe.getListOfInternalLinks(cur_url)
+            for link in cur_page_links:
+                url_queue.append(link)
+            if len(visited) >= PAGE_LIMIT: break
+        except URLError: pass
     if len(visited) >= PAGE_LIMIT: print('Page limit of ' + str(PAGE_LIMIT) + ' was hit.')
     print('Visited ' + str(len(visited)) + ' unique pages.')
     print('About ' + str(len(faq_urls)) + ' of those pages are likely FAQ pages.')
     return faq_urls
 
-baseUrl = 'http://ugrad.vcu.edu/'
+baseUrl = 'https://www.apple.com/'
 trainNN()
 faq_urls = crawl(baseUrl)
+print(faq_urls)

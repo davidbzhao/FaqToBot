@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup as bs
 import urllib.request as urlre
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 from HtmlFeatureExtractor import HtmlFeatureExtractor
 from ANN import BasicNeuralNetwork as BasicNeuralNetwork
 
@@ -29,9 +29,9 @@ class DataGenerator:
             html = bs(urlre.urlopen(url), 'html.parser')
             hfe = HtmlFeatureExtractor(html, base)
             with open('training.txt', 'a+') as f:
-                input_vec = [hfe.getNumberOfQuestionMarks(), hfe.getFaqInTitle(), hfe.getNumberOfFaqs(), hfe.getNumberofHashAnchors()]
+                input_vec = [hfe.getNumberOfQuestions(), hfe.getFaqInTitle(), hfe.getNumberOfFaqs(), hfe.getNumberofHashAnchors(), hfe.getFaqInUrl(url)]
                 f.write(' '.join([str(y)] + [str(x) for x in input_vec]) + '\n')
-        except HTTPError: print(url, 'not processed')
+        except (HTTPError, URLError) as e: print(url, 'not processed')
 
 if __name__ == '__main__':
     DataGenerator()
