@@ -1,4 +1,4 @@
-# OctoFaq
+# FaqToBot
 FAQ bot generator for websites
 
 ## Inspiration
