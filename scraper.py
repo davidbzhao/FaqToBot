@@ -27,7 +27,7 @@ def urlStandardize(url):
 
 def trainNN(filepath):
     """Return neural network trained on specified training set."""
-    nn = BasicNeuralNetwork()
+    nn = BasicNeuralNetwork('weights.pickle')
     nn.trainOnData(filepath)
     return nn
 

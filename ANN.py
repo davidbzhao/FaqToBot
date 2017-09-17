@@ -10,7 +10,7 @@ class BasicNeuralNetwork():
         self.theta = []				# weights
         self.lambda_reg = 0.05	    # regularization factor
         self.learning_rate = 0.01   # learning factor
-        self.filepath = filepath  # file path to save weights
+        self.filepath = filepath    # file path to save weights
 
         self.initWeights()
         self.sigmoid = np.vectorize(self.sigmoid)
