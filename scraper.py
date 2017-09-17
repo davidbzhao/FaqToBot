@@ -24,7 +24,7 @@ def trainNN():
     nn = BasicNeuralNetwork('weights.pickle')
     nn.trainOnData('training.txt')
 
-def isFaq(url, html):
+def isFaq(url, html, baseUrl):
     hfe = HtmlFeatureExtractor(html, baseUrl)
     ## Neural network
     # Features;
@@ -51,7 +51,7 @@ def crawl(baseUrl):
         try:
             html = bs(urlre.urlopen(cur_url), 'html.parser')
             hfe = HtmlFeatureExtractor(html, baseUrl)
-            if isFaq(cur_url, html): faq_urls.append(urlStandardize(cur_url))
+            if isFaq(cur_url, html, baseUrl): faq_urls.append(urlStandardize(cur_url))
             visited.append(urlStandardize(cur_url))
             cur_page_links = hfe.getListOfInternalLinks(cur_url)
             for link in cur_page_links:
@@ -63,7 +63,10 @@ def crawl(baseUrl):
     print('About ' + str(len(faq_urls)) + ' of those pages are likely FAQ pages.')
     return faq_urls
 
-baseUrl = 'https://www.apple.com/'
-trainNN()
-faq_urls = crawl(baseUrl)
-print(faq_urls)
+def potentialFaqsRequest(event, context):
+    baseUrl = event['baseUrl']
+    trainNN()
+    faq_urls = crawl(baseUrl)
+    print(faq_urls)
+    # print('hello world')
+    return '\n'.join(faq_urls)
