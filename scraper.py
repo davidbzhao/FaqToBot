@@ -1,10 +1,11 @@
-from bs4 import BeautifulSoup as bs
-import urllib.request as urlre
-from urllib.error import URLError
-from HtmlFeatureExtractor import HtmlFeatureExtractor
+
 from ANN import BasicNeuralNetwork as BasicNeuralNetwork
-from DataGeneration import DataGenerator
+from bs4 import BeautifulSoup as bs
 from collections import deque
+from DataGeneration import DataGenerator
+from HtmlFeatureExtractor import HtmlFeatureExtractor
+from urllib.error import URLError
+import urllib.request as urlre
 
 
 def urlStandardize(url):
