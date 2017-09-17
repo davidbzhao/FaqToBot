@@ -94,11 +94,12 @@ def crawl(base_url, nn, page_limit=50):
 
 
 def potentialFaqsRequest(event, context):
+    """Handle events for AWS Lambda."""
     base_url = event['base_url']
     page_limit = int(event['page_limit'])
     nn = trainNN('training.txt')
     faq_urls = crawl(base_url, nn, page_limit)
-    print('\n'.join(faq_urls))
+    return '\n'.join(faq_urls)
 
 
 if __name__ == '__main__':
