@@ -4,11 +4,11 @@ import pickle
 
 class BasicNeuralNetwork():
 	def __init__(self, filepath=None):
-		self.dim = [5, 3, 2]
+		self.dim = [5, 4, 2]
 		self.L = len(self.dim)
 		self.theta = []
 		self.lam = 0.05
-		self.learning_rate = 0.003
+		self.learning_rate = 0.01
 		self.filepath = filepath
 		self.initWeights()
 		self.sigmoid = np.vectorize(self.sigmoid)
@@ -90,7 +90,7 @@ class BasicNeuralNetwork():
 		grad = [0*t for t in self.theta]
 		reg = self.theta
 		m = len(y)
-		for n in range(50):
+		for n in range(20):
 			print('Epoch',n)
 			for i in range(m):
 				# a = forwardPropOne([[x[0][i]], [x[1][i]]])

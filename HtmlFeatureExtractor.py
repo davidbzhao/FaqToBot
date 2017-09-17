@@ -3,11 +3,11 @@ from bs4.element import Comment
 from urllib.parse import urljoin
 
 class HtmlFeatureExtractor:
-    def __init__(self, html, baseUrl):
+    def __init__(self, html, base_url):
         # html should be Beautiful Soup parsed already
         self.html = html
         self.filterTextFromHtml()
-        self.baseUrl = baseUrl
+        self.base_url = base_url
 
     def isVisible(self, elem):
         return not (elem.parent.name in ['style', 'script', 'head', 'meta', '[document]'] or \
@@ -70,9 +70,9 @@ class HtmlFeatureExtractor:
         links = [a['href'] for a in self.html.findAll('a', href=True) if (len(a['href']) > 0 and a['href'][0] != '#')]
         internal_links = []
         for link in links:
-            if link[:4] == 'http' and self.baseUrl in link: internal_links.append(link)
-            elif link[:4] == 'http' and self.baseUrl not in link: pass
-            elif self.baseUrl not in urljoin(curUrl, link): pass
+            if link[:4] == 'http' and self.base_url in link: internal_links.append(link)
+            elif link[:4] == 'http' and self.base_url not in link: pass
+            elif self.base_url not in urljoin(curUrl, link): pass
             elif '.doc' in link or '.pdf' in link or '.xls' in link or '.csv' in link or '.pptx' in link: pass
             else: internal_links.append(urljoin(curUrl, link))
         return internal_links
