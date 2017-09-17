@@ -8,66 +8,98 @@ from collections import deque
 
 
 def urlStandardize(url):
+    """Return url string without protocol or trailing slash."""
     try:
         i = url.index('http://')
         url = url[i + len('http://'):]
-    except ValueError: pass
+    except ValueError:
+        pass
     try:
         i = url.index('https://')
         url = url[i + len('https://'):]
-    except ValueError: pass
-    if url[-1] == '/': url = url[:-1]
+    except ValueError:
+        pass
+    if url[-1] == '/':
+        url = url[:-1]
     return url
 
-def trainNN():
+
+def trainNN(filepath):
+    """Return neural network trained on specified training set."""
     nn = BasicNeuralNetwork()
-    nn.trainOnData('training.txt')
+    nn.trainOnData(filepath)
     return nn
 
+
 def isFaq(url, html, base_url, nn):
+    """Determine if page pointed to by url contains an FAQ section.
+
+    The neural network used to guess if there is an FAQ or not has 5 features:
+    (1) the number of questions, superficially defined as a text with a question mark and a who, what, where...
+    (2) if FAQ or Frequently Asked Questions is in the title
+    (3) the number of times FAQ or Frequently Asked Questions in the form of non-anchor tags appears in page
+    (4) the number of anchor tags with links with same-page hashes
+    (5) if FAQ or Frequently Asked QUestions is in the url
+    """
     hfe = HtmlFeatureExtractor(html, base_url)
-    ## Neural network
-    # Features;
-    #   (1) number of questions, superficially defined as a text with a question mark and a who, what, where...
-    #   (2) if FAQ or Frequently Asked Questions is in the title
-    #   (3) how many times FAQ or Frequently Asked Questions in the form of non-anchor tags appears in page
-    #   (4) how many anchor tags with links to hash links
-    #   (5) if FAQ or Frequently Asked QUestions is in the url
-    input_vec = [hfe.getNumberOfQuestions(), hfe.getFaqInTitle(), hfe.getNumberOfFaqs(), hfe.getNumberofHashAnchors(), hfe.getFaqInUrl(url)]
-    # nn = BasicNeuralNetwork()
-    prediction = nn.predict(input_vec)
-    return (nn.predict(input_vec))
+    input_vec = [
+        hfe.getNumberOfQuestions(),
+        hfe.getFaqInTitle(),
+        hfe.getNumberOfFaqs(),
+        hfe.getNumberofHashAnchors(),
+        hfe.getFaqInUrl(url)]
+    return nn.predict(input_vec)
+
 
 def crawl(base_url, nn, page_limit=50):
+    """Crawl breadth-first through website through anchor links to find FAQ pages.
+
+    base_url -- the base url without the relative url
+    nn -- the trained neural network to determine if page is FAQ
+    page_limit -- the maximum number of pages to process (default 50)
+    """
     faq_urls = []
     visited = []
-    url_queue = deque()
-    url_queue.append(base_url)
+    url_queue = deque([base_url])
+
     while url_queue:
-        cur_url = url_queue.popleft()
-        if urlStandardize(cur_url) in visited: continue
-        print(cur_url)
+        current_url = url_queue.popleft()
+        if urlStandardize(current_url) in visited:
+            continue
         try:
-            html = bs(urlre.urlopen(cur_url), 'html.parser')
+            # Check if current page is FAQ
+            html = bs(urlre.urlopen(current_url), 'html.parser')
             hfe = HtmlFeatureExtractor(html, base_url)
-            if isFaq(cur_url, html, base_url, nn): faq_urls.append(urlStandardize(cur_url))
-            visited.append(urlStandardize(cur_url))
-            cur_page_links = hfe.getListOfInternalLinks(cur_url)
-            for link in cur_page_links:
+            if isFaq(current_url, html, base_url, nn):
+                faq_urls.append(urlStandardize(current_url))
+            visited.append(urlStandardize(current_url))
+
+            # Add links from current page
+            current_page_links = hfe.getListOfInternalLinks(current_url)
+            for link in current_page_links:
                 url_queue.append(link)
-            if len(visited) >= page_limit: break
-        except URLError: pass
-    if len(visited) >= page_limit: print('Page limit of ' + str(page_limit) + ' was hit.')
+
+            # Break if page limit hit
+            if len(visited) >= page_limit:
+                break
+        except URLError:
+            pass
+    if len(visited) >= page_limit:
+        print('Page limit of ' + str(page_limit) + ' was hit.')
     print('Visited ' + str(len(visited)) + ' unique pages.')
-    print('About ' + str(len(faq_urls)) + ' of those pages are likely FAQ pages.')
+    print('About ' + str(len(faq_urls)) +
+          ' of those pages are likely FAQ pages.')
     return faq_urls
+
 
 def potentialFaqsRequest(event, context):
     base_url = event['base_url']
     page_limit = int(event['page_limit'])
-    nn = trainNN()
+    nn = trainNN('training.txt')
     faq_urls = crawl(base_url, nn, page_limit)
     print('\n'.join(faq_urls))
 
+
 if __name__ == '__main__':
-    potentialFaqsRequest({'base_url':'http://ramhacks.vcu.edu/', 'page_limit':'50'}, '')
+    potentialFaqsRequest(
+        {'base_url': 'http://ramhacks.vcu.edu/', 'page_limit': '50'}, '')
