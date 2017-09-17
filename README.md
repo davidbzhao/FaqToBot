@@ -18,7 +18,7 @@ The _scraper.py_ file contains the Lambda function handler. This scraper conduct
 _ANN.py_ contains the basic neural network. Data to train the neural network is found in _prepro_training.txt_ and is processed by _DataGeneration.py_. For each url in the training set, the _HtmlFeatureExtractor.py_ extracts a set of quantitative features from the page and outputs that feature data into _training.txt_. The _ANN.py_ can then be trained on the numeric training data in _training.txt_. The weights are stored and restored via a pickle file.
 
 ## Credits
-Julian Duque - Link between application and Microsoft Cognitive Services
-Meredith Lee - Application-user interface
-Tony Wang - Amazon Alexa interface through AWS
-David Zhao - AWS Python backend
+* Julian Duque - Link between application and Microsoft Cognitive Services
+* Meredith Lee - Application-user interface
+* Tony Wang - Amazon Alexa interface through AWS
+* David Zhao - AWS Python backend
