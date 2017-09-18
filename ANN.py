@@ -105,7 +105,7 @@ class BasicNeuralNetwork():
         grad = [0 * t for t in self.theta]
         reg = self.theta
         m = len(y)
-        for n in range(20):
+        for n in range(50):
             for i in range(m):
                 a = self.forwardPropOne(x[i])
                 g = self.backwardProp(a, y[i])

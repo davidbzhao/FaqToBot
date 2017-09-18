@@ -67,6 +67,7 @@ def crawl(base_url, nn, page_limit=50):
         if urlStandardize(current_url) in visited:
             continue
         try:
+            print(current_url)
             # Check if current page is FAQ
             html = bs(urlre.urlopen(current_url), 'html.parser')
             hfe = HtmlFeatureExtractor(html, base_url)
