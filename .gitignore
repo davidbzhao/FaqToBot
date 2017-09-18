@@ -1,2 +1,7 @@
 __pycache__/
 .vscode/
+numpy/
+numpy-1.13.1.dist-info/
+bs4/
+bs4-0.0.1-py3.6.egg-info/
+beautifulsoup4-4.6.0.dist-info/
