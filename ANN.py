@@ -4,25 +4,25 @@ import pickle
 
 
 class BasicNeuralNetwork():
-    def __init__(self, filepath=None):
+    def __init__(self, weights_store_filepath, training=True):
         self.dim = [5, 4, 2]		# layer dimensions
         self.L = len(self.dim)		# no. of layers
         self.theta = []				# weights
         self.lambda_reg = 0.05	    # regularization factor
         self.learning_rate = 0.01   # learning factor
-        self.filepath = filepath    # file path to save weights
+        self.weights_store_filepath = weights_store_filepath    # file path to save weights
 
-        self.initWeights()
+        self.initWeights(training)
         self.sigmoid = np.vectorize(self.sigmoid)
 
-    def initWeights(self):
+    def initWeights(self, training):
         """Initialize weights for each layer."""
-        if self.filepath is None or not os.path.isfile(self.filepath):
+        if training and not os.path.isfile(self.weights_store_filepath):
             for cnt in range(self.L - 1):
                 self.theta.append(
                     (np.random.rand(self.dim[cnt + 1], self.dim[cnt] + 1) - 0.5) * 5)
         else:
-            self.theta = pickle.load(open(self.filepath, 'rb'))
+            self.theta = pickle.load(open(self.weights_store_filepath, 'rb'))
 
     def sigmoid(self, z):
         """Apply sigmoid function."""
@@ -75,13 +75,13 @@ class BasicNeuralNetwork():
                 a[cnt], 0, 1, axis=0)[:, None].T))
         return grad
 
-    def trainOnData(self, filepath):
-        """Train neural network using data at filepath."""
+    def trainOnData(self, data_filepath):
+        """Train neural network using data at data_filepath."""
         x = []
         y_tmp = []
-        # Parse data at filepath into training arrays
-        if os.path.isfile(filepath):
-            with open(filepath, 'r') as f:
+        # Parse data at data_filepath into training arrays
+        if os.path.isfile(data_filepath):
+            with open(data_filepath, 'r') as f:
                 for line in f.readlines():
                     tmp = [float(x) for x in line.strip().split()]
                     x.append(tmp[1:])
@@ -114,6 +114,5 @@ class BasicNeuralNetwork():
                 reg[i].T[0] = 0
                 self.theta[i] = self.theta[i] - self.learning_rate * \
                     (grad[i] / m + self.lambda_reg * reg[i])
-        if self.filepath is not None:
-            pickle.dump(self.theta, open(self.filepath, 'wb'))
+        pickle.dump(self.theta, open(self.weights_store_filepath, 'wb'))
         return

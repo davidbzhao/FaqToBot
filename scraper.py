@@ -25,11 +25,10 @@ def urlStandardize(url):
     return url
 
 
-def trainNN(filepath):
-    """Return neural network trained on specified training set."""
-    nn = BasicNeuralNetwork('weights.pickle')
-    nn.trainOnData(filepath)
-    return nn
+def trainNN(data_filepath, weights_store_filepath):
+    """Train and save a neural network on specified training set."""
+    nn = BasicNeuralNetwork(weights_store_filepath, training=True)
+    nn.trainOnData(data_filepath)
 
 
 def isFaq(url, html, base_url, nn):
@@ -97,11 +96,10 @@ def potentialFaqsRequest(event, context):
     """Handle events for AWS Lambda."""
     base_url = event['base_url']
     page_limit = int(event['page_limit'])
-    nn = trainNN('training.txt')
+    nn = BasicNeuralNetwork('weights.pickle',training=False)
     faq_urls = crawl(base_url, nn, page_limit)
     return '\n'.join(faq_urls)
 
 
 if __name__ == '__main__':
-    potentialFaqsRequest(
-        {'base_url': 'http://ramhacks.vcu.edu/', 'page_limit': '50'}, '')
+    trainNN('training.txt','weights.pickle')
