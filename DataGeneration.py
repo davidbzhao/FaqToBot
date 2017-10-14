@@ -45,9 +45,7 @@ class DataGenerator:
             with open('training.txt', 'a+') as f:
                 input_vec = [
                     hfe.getNumberOfQuestions(),
-                    hfe.getFaqInTitle(),
                     hfe.getNumberOfFaqs(),
-                    hfe.getNumberofHashAnchors(),
                     hfe.getFaqInUrl(url)]
                 f.write(' '.join([str(y)] + [str(x)
                                              for x in input_vec]) + '\n')

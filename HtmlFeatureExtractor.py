@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup as bs
 from bs4.element import Comment
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse, urlunparse
 
 
 class HtmlFeatureExtractor:
@@ -12,7 +12,15 @@ class HtmlFeatureExtractor:
         """
         self.html = html
         self.filterTextFromHtml()
-        self.base_url = base_url
+        self.base_url = self.clean_base_url(base_url)
+
+    def clean_base_url(self, base_url):
+        if '.' in base_url and '/' in base_url and base_url[::-1].index('.') < base_url[::-1].index('/'):
+            parsed = urlparse(base_url)
+            cleaned_path = '/'.join(parsed.path.rsplit('/')[:-1])
+            parsed = parsed._replace(path=cleaned_path)
+            return urlunparse(parsed)
+        return base_url
 
     def isVisible(self, elem):
         """Return inherent visibility of element."""
@@ -91,15 +99,21 @@ class HtmlFeatureExtractor:
             len(a['href']) > 0 and a['href'][0] != '#')]
         internal_links = []
         for link in links:
+            # print(link, end=' -> ')
             # Do not add if external link or non-html document type
             if link[:4] == 'http' and self.base_url in link:
                 internal_links.append(link)
+                # print('added to internal')
             elif link[:4] == 'http' and self.base_url not in link:
-                pass
+                # print('not http')
+                continue
             elif self.base_url not in urljoin(current_url, link):
-                pass
+                # print('%s not in %s' % (self.base_url, urljoin(current_url, link)))
+                continue
             elif '.doc' in link or '.pdf' in link or '.xls' in link or '.csv' in link or '.pptx' in link:
-                pass
+                # print('not html')
+                continue
             else:
+                # print('added to internal')
                 internal_links.append(urljoin(current_url, link))
         return internal_links
