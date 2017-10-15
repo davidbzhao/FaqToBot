@@ -23,7 +23,7 @@ def urlStandardize(url):
         pass
     if url[-1] == '/':
         url = url[:-1]
-    return url
+    return url.lower()
 
 
 def isFaq(url, html, base_url, clf):
@@ -51,7 +51,7 @@ def crawl(base_url, clf, page_limit=50):
     """
     faq_urls = []
     visited = []
-    url_queue = deque([base_url])
+    url_queue = deque([base_url.lower()])
 
     while url_queue:
         current_url = url_queue.popleft()
