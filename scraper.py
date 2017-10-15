@@ -39,7 +39,7 @@ def isFaq(url, html, base_url, clf):
         hfe.getNumberOfQuestions(),
         hfe.getNumberOfFaqs(),
         hfe.getFaqInUrl(url)]
-    return clf.predict([input_vec])
+    return clf.predict(input_vec)
 
 
 def crawl(base_url, clf, page_limit=50):
