@@ -51,7 +51,7 @@ def crawl(base_url, clf, page_limit=50):
     """
     faq_urls = []
     visited = []
-    url_queue = deque([base_url.lower()])
+    url_queue = deque([base_url])
 
     while url_queue:
         current_url = url_queue.popleft()

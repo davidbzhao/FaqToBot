@@ -15,7 +15,7 @@ class HtmlFeatureExtractor:
         self.base_url = self.clean_base_url(base_url)
 
     def clean_base_url(self, base_url):
-        if '.' in base_url and '/' in base_url and base_url[::-1].index('.') < base_url[::-1].index('/'):
+	if 'index.html' in base_url and '/' in base_url:
             parsed = urlparse(base_url)
             cleaned_path = '/'.join(parsed.path.rsplit('/')[:-1])
             parsed = parsed._replace(path=cleaned_path)
